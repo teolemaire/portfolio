@@ -1,0 +1,1725 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Géomatique - Teo Le Maire</title>
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            overflow-x: hidden;
+            color: white;
+            line-height: 1.6;
+            cursor: crosshair;
+        }
+        
+        #globe-container {
+            width: 100%;
+            height: 70vh;
+            position: relative;
+            cursor: grab;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+        }
+        
+        #globe-container:active {
+            cursor: grabbing;
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            max-width: 350px;
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+                .header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            max-width: 380px;
+            animation: slideInLeft 0.6s ease-out;
+            border-left: 4px solid #4a9eff;
+        }
+        
+        .header h1 {
+            color: #1e3a5f;
+            font-size: 28px;
+            margin-bottom: 5px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .header .subtitle {
+            color: #4a9eff;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .header .bio {
+            color: #5a7a96;
+            font-size: 13px;
+            line-height: 1.7;
+            margin: 0;
+            font-weight: 400;
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .header h1 {
+            color: #1e3a5f;
+            font-size: 24px;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            color: #5a7a96;
+            font-size: 14px;
+        }
+
+        .cv-floating {
+            position: absolute;
+            top: 50%;
+            right: 30px;
+            transform: translateY(-50%);
+            z-index: 900;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(-50%); }
+            50% { transform: translateY(-60px); }
+        }
+
+        .cv-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 280px;
+            text-align: center;
+            border: 2px solid #4a9eff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cv-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(135deg, transparent, rgba(74, 158, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translate(-100%, -100%) rotate(0deg); }
+            100% { transform: translate(100%, 100%) rotate(0deg); }
+        }
+
+        .cv-card-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cv-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            display: inline-block;
+            animation: rotate 4s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotateZ(0deg); }
+            100% { transform: rotateZ(360deg); }
+        }
+
+        .cv-card h3 {
+            color: #1e3a5f;
+            font-size: 18px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .cv-card p {
+            color: #5a7a96;
+            font-size: 12px;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .cv-download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #4a9eff 0%, #2e7fd9 100%);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 15px rgba(74, 158, 255, 0.4);
+        }
+
+        .cv-download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 158, 255, 0.6);
+            background: linear-gradient(135deg, #5ba3ff 0%, #3f8ae6 100%);
+        }
+
+        .cv-download-btn:active {
+            transform: translateY(0);
+        }
+        
+        .project-panel {
+            position: fixed;
+            right: -450px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 420px;
+            max-height: 85vh;
+            background: white;
+            border-radius: 12px 0 0 12px;
+            box-shadow: -4px 0 30px rgba(0,0,0,0.4);
+            overflow-y: auto;
+            z-index: 1000;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .project-panel.active {
+            right: 0;
+        }
+        
+        .project-panel-content {
+            padding: 35px;
+        }
+
+        .project-selector {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .project-selector h3 {
+            color: #1e3a5f;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .project-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .project-option {
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .project-option:hover {
+            border-color: #4a9eff;
+            background: #e3f2fd;
+        }
+
+        .project-option.active {
+            border-color: #4a9eff;
+            background: #4a9eff;
+            color: white;
+        }
+        
+        .project-panel h2 {
+            color: #1e3a5f;
+            font-size: 24px;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+        
+        .project-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            font-size: 13px;
+            color: #5a7a96;
+            flex-wrap: wrap;
+        }
+        
+        .project-section {
+            margin-bottom: 25px;
+        }
+        
+        .project-section h3 {
+            color: #2c5f7c;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            border-left: 4px solid #4a9eff;
+            padding-left: 12px;
+        }
+        
+        .project-section p {
+            color: #333;
+            line-height: 1.7;
+            font-size: 14px;
+        }
+
+        .project-links {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .project-link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .pdf-btn {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .pdf-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        }
+
+        .link-btn {
+            background: #3498db;
+            color: white;
+        }
+
+        .link-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        .icon {
+            font-size: 16px;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #f0f0f0;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            color: #666;
+            transition: all 0.3s;
+            z-index: 1001;
+        }
+        
+        .close-btn:hover {
+            background: #e0e0e0;
+            transform: rotate(90deg);
+        }
+        
+        .projects-section {
+            padding: 60px 20px;
+            background: #0d1117;
+        }
+        
+        .projects-section h2 {
+            text-align: center;
+            font-size: 32px;
+            margin-bottom: 50px;
+            color: white;
+        }
+
+        .projects-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .category-group {
+            margin-bottom: 60px;
+        }
+
+        .category-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #4a9eff;
+            margin-bottom: 25px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #4a9eff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .category-icon {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        
+        .project-card {
+            background: #161b22;
+            padding: 25px;
+            border-radius: 12px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+            cursor: pointer;
+            border: 1px solid #21262d;
+            will-change: transform, box-shadow;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(74, 158, 255, 0.3);
+            border-color: #4a9eff;
+        }
+        
+        .project-card h3 {
+            color: #4a9eff;
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .project-card-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .project-card .meta {
+            font-size: 12px;
+            color: #8b949e;
+            margin-bottom: 12px;
+        }
+        
+        .project-card p {
+            color: #c9d1d9;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .color-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+                .universities-section {
+            margin-bottom: 50px;
+            padding: 40px 30px;
+            background: rgba(74, 158, 255, 0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(74, 158, 255, 0.2);
+        }
+
+        .universities-section h3 {
+            color: #4a9eff;
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .universities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 25px;
+        }
+
+        .university-item {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+        }
+
+        .university-item img[alt="AgroParisTech"] {
+            max-height: 70px;
+            padding: 5px;
+        }
+
+        .university-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(74, 158, 255, 0.2);
+            border-color: #4a9eff;
+        }
+
+        .university-logo {
+            height: 80px;
+            width: auto;
+            margin-bottom: 12px;
+            object-fit: contain;
+            filter: grayscale(100%);
+            transition: filter 0.3s;
+        }
+
+        .university-item:hover .university-logo {
+            filter: grayscale(0%);
+        }
+
+        .university-item p {
+            color: #333;
+            font-size: 12px;
+            font-weight: 500;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            .universities-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .universities-section {
+                padding: 30px 20px;
+            }
+        }
+
+        /* Section CV créative */
+        .cv-section {
+            padding: 80px 20px;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cv-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(74, 158, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(46, 204, 113, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .cv-section-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cv-section h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 50px;
+            color: white;
+            text-shadow: 0 2px 10px rgba(74, 158, 255, 0.3);
+        }
+
+        .cv-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .cv-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(74, 158, 255, 0.2);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .cv-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(74, 158, 255, 0.5);
+            transform: translateY(-5px);
+        }
+
+        .cv-item-icon {
+            font-size: 40px;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+
+        .cv-item h3 {
+            color: #4a9eff;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .cv-item p {
+            color: #c9d1d9;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .cv-download-section {
+            text-align: center;
+            padding: 50px 30px;
+            background: rgba(74, 158, 255, 0.1);
+            border: 2px solid rgba(74, 158, 255, 0.3);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .cv-download-section h3 {
+            color: #4a9eff;
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .cv-download-section p {
+            color: #c9d1d9;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .cv-download-btn-large {
+            display: inline-block;
+            background: linear-gradient(135deg, #4a9eff 0%, #2e7fd9 100%);
+            color: white;
+            padding: 16px 40px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 8px 25px rgba(74, 158, 255, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cv-download-btn-large::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.3s;
+        }
+
+        .cv-download-btn-large:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(74, 158, 255, 0.6);
+            background: linear-gradient(135deg, #5ba3ff 0%, #3f8ae6 100%);
+        }
+
+        .cv-download-btn-large:hover::before {
+            left: 100%;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            background: #0a0e27;
+            color: #8b949e;
+            font-size: 14px;
+        }
+        
+        .project-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .project-panel::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .project-panel::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        .project-panel::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #4a9eff;
+            animation: spin 1s linear infinite;
+            z-index: 500;
+        }
+        
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .project-panel {
+                width: 100%;
+                right: -100%;
+                border-radius: 0;
+            }
+            
+            .header {
+                max-width: 90%;
+                font-size: 14px;
+            }
+            
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .projects-section {
+                padding: 40px 20px;
+            }
+
+            .category-title {
+                font-size: 20px;
+            }
+
+            .project-links {
+                flex-direction: column;
+            }
+
+            .project-link-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .cv-floating {
+                position: static;
+                transform: none;
+                margin: 30px auto;
+                animation: none;
+            }
+
+            .cv-section h2 {
+                font-size: 24px;
+            }
+
+            .cv-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header" role="banner">
+        <h1>Teo Le Maire</h1>
+        <p class="subtitle">Géomaticien • Cartographe</p>
+        <p class="bio">Spécialiste en géomatique et analyse spatiale avec expertise cartographie, SIG et traitement de données. Je transforme les données géospatiales complexes en solutions cartographiques innovantes pour l'environnement et l'aménagement urbain.</p>
+    </div>
+
+    <div class="cv-floating">
+        <div class="cv-card">
+            <div class="cv-card-content">
+                <div class="cv-icon">🗺️</div>
+                <h3>Mon CV</h3>
+                <p>Découvrez mon parcours en géomatique</p>
+                <a href="pdf/TeoLM_CV2026.pdf" download class="cv-download-btn">📥 Télécharger</a>
+            </div>
+        </div>
+    </div>
+    
+    <div id="globe-container" 
+         role="img" 
+         aria-label="Globe interactif avec projets géomatiques"
+         aria-describedby="globe-description">
+        <div class="loading-spinner"></div>
+    </div>
+    
+    <p id="globe-description" style="display: none;">
+        Globe 3D interactif. Cliquez et draggez pour faire tourner. Cliquez sur les marqueurs colorés pour voir les détails des projets.
+    </p>
+    
+    <div class="project-panel" id="projectPanel" role="dialog" aria-modal="true" aria-labelledby="panelTitle">
+        <button class="close-btn" onclick="window.portfolio.closePanel()" aria-label="Fermer le panneau">×</button>
+        <div class="project-panel-content" id="panelContent"></div>
+    </div>
+    
+    <section class="projects-section">
+        <h2>Mes Projets</h2>
+        <div class="projects-container" id="projectsContainer"></div>
+    </section>
+
+    <!-- SECTION CV CRÉATIVE -->
+    <section class="cv-section">
+        <div class="cv-section-content">
+            <h2>Mon Parcours Géomatique</h2>
+            
+            <div class="cv-grid">
+                <div class="cv-item">
+                    <div class="cv-item-icon">🎓</div>
+                    <h3>Formation</h3>
+                    <p>Master Géomatique (Analyse spatiale et télédétection pour l'environnement), Licence Géographie et Aménagement</p>
+                </div>
+                <div class="cv-item">
+                    <div class="cv-item-icon">🛰️</div>
+                    <h3>Spécialisations</h3>
+                    <p>Télédétection, SIG, Lidar, Analyse de données géospatiales</p>
+                </div>
+                <div class="cv-item">
+                    <div class="cv-item-icon">💻</div>
+                    <h3>Outils</h3>
+                    <p>QGIS, ArcGIS, Python, PostgreSQL, JavaScript, Leaflet</p>
+                </div>
+            </div>
+
+            <!-- LOGOS DES UNIVERSITÉS -->
+            <div class="universities-section">
+                <h3>Parcours académique</h3>
+                <div class="universities-grid">
+                    <div class="university-item">
+                        <img src="images/UnivMontpellier.png" alt="Université de Montpellier" class="university-logo">
+                        <p>Université de Montpellier</p>
+                    </div>
+                    <div class="university-item">
+                        <img src="images/PaulValery.png" alt="Université Paul Valéry" class="university-logo">
+                        <p>Université Paul Valéry</p>
+                    </div>
+                    <div class="university-item">
+                        <img src="images/APT.png" alt="AgroParisTech" class="university-logo">
+                        <p>AgroParisTech - Maison de la télédétection</p>
+                    </div>
+                    <div class="university-item">
+                        <img src="images/UnivAvignon.png" alt="Avignon Universtié" class="university-logo">
+                        <p>Université d'Avignon Hannah Arendt</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cv-download-section">
+                <h3>📄 Télécharger Mon CV Complet</h3>
+                <p>Consultez mon parcours détaillé, mes expériences et compétences en géomatique</p>
+                <a href="pdf/TeoLM_CV2026.pdf" download class="cv-download-btn-large">
+                    📥 Télécharger le CV (PDF)
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <footer role="contentinfo">
+        <p>© 2026 Teo Le Maire - Géomaticien & Cartographe</p>
+    </footer>
+    
+    <script>
+        // ============================================
+        // 🎨 CONFIGURATION COULEURS PAR CATÉGORIE
+        // ============================================
+        const CATEGORY_COLORS = {
+            "Opérationnel": 0x3498db,  // Bleu
+            "Recherche": 0x2ecc71      // Vert
+        };
+
+        // ============================================
+        // 📌 CONFIGURATION - AJOUTER VOS PROJETS ICI
+        // ============================================
+        const PROJECTS_DATA = [
+            // ========== CATÉGORIE: OPÉRATIONNEL ==========
+            {
+                name: "MEMOIRE - EcoMed",
+                lat: 43.6108,
+                lon: 3.8767,
+                category: "Mémoire Master",
+                categoryGroup: "Opérationnel",
+                date: "2025",
+                description: "Chaîne de traitement de données Lidar pour digitaliser la hauteur de végétation",
+                objectives: "Développer une chaîne de traitement automatisée pour extraire et analyser la hauteur de la végétation à partir de données Lidar haute résolution afin de contribuer aux études écologiques méditerranéennes.",
+                tools: "Python (scikit-learn, scipy), GDAL/OGR, Cloud Compare, QGIS, Lidar (données aériennes)",
+                results: "Modèle de traitement reproductible, cartes de hauteur de végétation, métriques d'évaluation de performance, documentation complète du workflow.",
+                location: "Montpellier, France",
+                pdfUrl: "pdf/EcoMed.pdf",
+                projectUrl: null
+            },
+            {
+                name: "Projet de WebMapping - Prospection Commerciale",
+                lat: 43.6108,
+                lon: 3.8767,
+                category: "Projet Professionnel",
+                categoryGroup: "Opérationnel",
+                date: "2025",
+                description: "Développement d'une webmap interactive pour l'analyse de zones de prospection commerciale",
+                objectives: "Créer un outil cartographique web permettant l'analyse spatiale des secteurs commerciaux, l'identification de zones prioritaires et la visualisation de données démographiques.",
+                tools: "Leaflet.js, OpenStreetMap, GeoJSON, JavaScript/HTML5, PostGIS, API cartographiques",
+                results: "WebSIG fonctionnel avec filtrage dynamique, visualisations cartographiques interactives, tableau de bord d'indicateurs clés, documentation technique.",
+                location: "Montpellier, France",
+                pdfUrl: "pdf/WebMapping.pdf",
+                projectUrl: null
+            },
+            {
+                name: "Cartographie Topographique - Laventure",
+                lat: -20.422486,
+                lon: 58.006449,
+                category: "Cartographie Topographique",
+                categoryGroup: "Opérationnel",
+                date: "2026",
+                description: "Comprendre la topographie avant d'aménager un terrain - Cartographie haute résolution du relief",
+                objectives: "Visualiser et analyser le relief d'un terrain pour anticiper les enjeux d'aménagement. Transformer des données topographiques brutes en support de décision clair et lisible pour les propriétaires et élus.",
+                tools: "QGIS, Modèle Numérique de Terrain (MNT) haute résolution, Courbes de niveau (10m et 2,5m), Analyse d'altitude",
+                results: "Cartes topographiques détaillées avec courbes de niveau principales et secondaires, visualisation de l'altitude relative, identification des pentes naturelles, localisation des chemins existants, recommandations pour terrassements et zones d'aménagement.",
+                location: "Laventure, Ile Maurice",
+                pdfUrl: "pdf/CartoTopo_ProjUrba_Laventure.pdf",
+                projectUrl: null
+            },
+            {
+                name: "Cartographie des primes de déplacement - Daniel Moquet",
+                lat: 46.25484,
+                lon: 5.21567,
+                category: "Analyse Géomatique",
+                categoryGroup: "Opérationnel",
+                date: "2026",
+                description: "Cartographie des zones de primes de déplacement (MG) à partir de distances routières réelles pour optimiser l’organisation opérationnelle.",
+                objectives: "Structurer et spatialiser les primes de déplacement à l’échelle communale en fonction des distances réelles depuis les dépôts afin d’améliorer la lisibilité et la prise de décision.",
+                tools: "QGIS, OpenStreetMap, Valhalla (routage), Analyse réseau, Traitement spatial",
+                results: "Cartes opérationnelles classifiant les communes selon les niveaux de primes (MG3 à MG6), amélioration de l’attribution des primes, support direct à la décision pour la gestion des déplacements.",
+                location: "France",
+                pdfUrl: "pdf/Primes_Deplacement_DanielMoquet.pdf",
+                projectUrl: null
+            },
+
+            // ========== CATÉGORIE: RECHERCHE ==========
+            {
+                name: "Cartographie de la mangrove de Bombetoka",
+                lat: -15.5891,
+                lon: 46.3988,
+                category: "Projet Master",
+                categoryGroup: "Recherche",
+                date: "2025",
+                description: "Cartographie de la mangrove de la baie de Bombetoka à Madagascar à l'aide de la chaîne Iota 2",
+                objectives: "Réaliser une classification automatisée des mangroves à partir d'images satellite multi-temporelles pour évaluer les changements d'occupation du sol et les dynamiques côtières.",
+                tools: "Iota 2 (chaîne de traitement), Python, Images Sentinel-2 & Landsat 8, QGIS, PostgreSQL/PostGIS",
+                results: "Cartes de classification détaillées, analyse de la dynamique temporelle, rapport d'analyse des changements côtiers, données géographiques vectorisées.",
+                location: "Baie de Bombetoka, Madagascar",
+                pdfUrl: "pdf/IOTA2.pdf",
+                projectUrl: null
+            },
+            {
+                name: "La revégétalisation de la ville d'Avignon",
+                lat: 43.9526,
+                lon: 4.8057,
+                category: "Étude Urbaine",
+                categoryGroup: "Recherche",
+                date: "2024",
+                description: "Étude de la revégétalisation urbaine et des stratégies d'aménagement vert à Avignon",
+                objectives: "Analyser les potentiels de revégétalisation urbaine, identifier les zones prioritaires pour l'implantation d'espaces verts et proposer des stratégies d'adaptation climatique.",
+                tools: "QGIS, Analyse spatiale, Données cadastrales, Images aériennes, Cartographie thématique",
+                results: "Cartes d'analyse du potentiel de revégétalisation, identification de 12 zones d'intervention prioritaires, propositions d'aménagement, rapport recommandatif.",
+                location: "Avignon, France",
+                pdfUrl: null,
+                projectUrl: "https://mauvelepagnol.wixsite.com/vegetalisationavi"
+            },
+            {
+                name: "Analyse des transports intermédiaires",
+                lat: 43.9526,
+                lon: 4.8057,
+                category: "Étude Urbaine",
+                categoryGroup: "Recherche",
+                date: "2023",
+                description: "Analyse d'accessibilité multimodale autour des stations de transports en commun",
+                objectives: "Réaliser une analyse d'accessibilité multimodale autour des stations du réseau pour évaluer les besoins en transports intermédiaires (vélos, scooters, etc.).",
+                tools: "QGIS, Isochrones, Analyse réseau, OpenStreetMap, Données OSM, Python (NetworkX)",
+                results: "Cartes d'accessibilité, analyse d'isochrones de 5, 10 et 15 minutes, identification de zones de rabattement potentielles, rapports d'analyse stratégique.",
+                location: "Avignon, France",
+                pdfUrl: null,
+                projectUrl: "https://teolemaire7.wixsite.com/transports"
+            },
+            {
+                name: "Étude Énergie et Développement",
+                lat: 43.9526,
+                lon: 4.8057,
+                category: "Recherche",
+                categoryGroup: "Recherche",
+                date: "2023",
+                description: "Analyse géospatiale des enjeux d'énergie et de développement durable",
+                objectives: "Examiner les corrélations entre l'accès à l'énergie, le développement économique et les facteurs géographiques à l'échelle globale et régionale.",
+                tools: "QGIS, ArcGIS, Données SIG d'énergie, Analyse statistique, Modélisation spatiale",
+                results: "Cartographies thématiques, analyses de corrélation spatiale, matrices d'indicateurs de développement, synthèse comparative régionale.",
+                location: "Avignon, France",
+                pdfUrl: null,
+                projectUrl: "https://teolemaire7.wixsite.com/my-site"
+            },
+        ];
+
+        // ============================================
+        // UTILITAIRES
+        // ============================================
+        
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function latLonToVector3(lat, lon, radius = 1) {
+            const phi = (90 - lat) * (Math.PI / 180);
+            const theta = (lon + 180) * (Math.PI / 180);
+            
+            const x = -radius * Math.sin(phi) * Math.cos(theta);
+            const y = radius * Math.cos(phi);
+            const z = radius * Math.sin(phi) * Math.sin(theta);
+            
+            return new THREE.Vector3(x, y, z);
+        }
+
+        function hexToString(hex) {
+            return '#' + hex.toString(16).padStart(6, '0');
+        }
+
+        // ============================================
+        // CRÉER UN FOND ESPACE
+        // ============================================
+        function createSpaceBackground(scene) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 2048;
+            canvas.height = 2048;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#0a0e27';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width);
+            gradient.addColorStop(0, '#001d3d');
+            gradient.addColorStop(1, '#0a0e27');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < 1000; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const size = Math.random() * 1.5;
+                const opacity = Math.random() * 0.8 + 0.2;
+
+                ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+                ctx.fillRect(x, y, size, size);
+
+                if (Math.random() > 0.8) {
+                    const colors = ['rgba(147, 197, 253, ' + opacity + ')', 'rgba(244, 114, 182, ' + opacity + ')'];
+                    ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+                    ctx.fillRect(x, y, size * 1.5, size * 1.5);
+                }
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const geometry = new THREE.SphereGeometry(500, 32, 32);
+            const material = new THREE.MeshBasicMaterial({
+                map: texture,
+                side: THREE.BackSide
+            });
+            const starfield = new THREE.Mesh(geometry, material);
+            scene.add(starfield);
+        }
+
+        // ============================================
+        // CRÉER UN MARQUEUR PIN - STYLE NETWORK GLOBE
+        // ============================================
+        function createMarkerPin(color) {
+            const group = new THREE.Group();
+            
+            const stemGeometry = new THREE.CylinderGeometry(0.003, 0.003, 0.10, 8);
+            const stemMaterial = new THREE.MeshStandardMaterial({ 
+                color: color,
+                metalness: 0.7,
+                roughness: 0.2
+            });
+            const stem = new THREE.Mesh(stemGeometry, stemMaterial);
+            stem.rotation.x = Math.PI / 2;
+            stem.position.z = 0.05;
+            group.add(stem);
+            
+            const sphereGeometry = new THREE.SphereGeometry(0.018, 16, 16);
+            const sphereMaterial = new THREE.MeshStandardMaterial({ 
+                color: color,
+                metalness: 0.6,
+                roughness: 0.3,
+                emissive: color,
+                emissiveIntensity: 0.2
+            });
+            const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+            sphere.position.z = 0.1;
+            group.add(sphere);
+            
+            const light = new THREE.PointLight(color, 0.5, 0.6);
+            light.position.z = 0.1;
+            group.add(light);
+            
+            return group;
+        }
+
+        // ============================================
+        // GESTIONNAIRE DE TEXTURE
+        // ============================================
+        class TextureManager {
+            static cache = new Map();
+
+            static async load(url) {
+                if (this.cache.has(url)) {
+                    return this.cache.get(url);
+                }
+
+                const loader = new THREE.TextureLoader();
+                try {
+                    const texture = await loader.loadAsync(url);
+                    texture.encoding = THREE.sRGBColorSpace;
+                    this.cache.set(url, texture);
+                    return texture;
+                } catch (error) {
+                    console.error('Erreur chargement texture:', error);
+                    const canvas = document.createElement('canvas');
+                    canvas.width = canvas.height = 64;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#333';
+                    ctx.fillRect(0, 0, 64, 64);
+                    const texture = new THREE.CanvasTexture(canvas);
+                    this.cache.set(url, texture);
+                    return texture;
+                }
+            }
+        }
+
+        // ============================================
+        // GESTIONNAIRE D'ENTRÉE
+        // ============================================
+        class InputHandler {
+            constructor(element, callbacks = {}) {
+                this.element = element;
+                this.isDragging = false;
+                this.previousPos = { x: 0, y: 0 };
+                this.callbacks = callbacks;
+                this.setupListeners();
+            }
+
+            setupListeners() {
+                this.element.addEventListener('pointerdown', (e) => this.onDown(e), { passive: true });
+                this.element.addEventListener('pointermove', (e) => this.onMove(e), { passive: true });
+                this.element.addEventListener('pointerup', (e) => this.onUp(e), { passive: true });
+                this.element.addEventListener('pointerleave', (e) => this.onUp(e), { passive: true });
+                this.element.addEventListener('click', (e) => this.onClick(e));
+            }
+
+            onDown(e) {
+                this.isDragging = true;
+                this.previousPos = { x: e.clientX, y: e.clientY };
+                this.callbacks.onDown?.();
+            }
+
+            onMove(e) {
+                if (this.isDragging) {
+                    const deltaX = e.clientX - this.previousPos.x;
+                    const deltaY = e.clientY - this.previousPos.y;
+                    this.previousPos = { x: e.clientX, y: e.clientY };
+                    this.callbacks.onMove?.({ deltaX, deltaY });
+                }
+            }
+
+            onUp(e) {
+                this.isDragging = false;
+                this.callbacks.onUp?.();
+            }
+
+            onClick(e) {
+                if (!this.isDragging) {
+                    this.callbacks.onClick?.(e);
+                }
+            }
+        }
+
+        // ============================================
+        // GESTIONNAIRE D'ANIMATION
+        // ============================================
+        class AnimationController {
+            constructor() {
+                this.targetRotation = { x: 0, y: 400 };
+                this.currentRotation = { x: 0, y: 400 };
+                this.autoRotate = true;
+                this.autoRotateSpeed = 0.001;
+                this.easing = 0.05;
+            }
+
+            update(isDragging = false) {
+                if (!isDragging && this.autoRotate) {
+                    this.targetRotation.y += this.autoRotateSpeed;
+                }
+
+                this.currentRotation.x += (this.targetRotation.x - this.currentRotation.x) * this.easing;
+                this.currentRotation.y += (this.targetRotation.y - this.currentRotation.y) * this.easing;
+
+                return this.currentRotation;
+            }
+
+            setDelta(deltaX, deltaY) {
+                this.targetRotation.y += deltaX * 0.005;
+                this.targetRotation.x += deltaY * 0.005;
+            }
+        }
+
+        // ============================================
+        // GESTIONNAIRE D'INTERACTION
+        // ============================================
+        class InteractionManager {
+            constructor(camera, markerObjects) {
+                this.raycaster = new THREE.Raycaster();
+                this.mouse = new THREE.Vector2();
+                this.camera = camera;
+                this.markerObjects = markerObjects;
+            }
+
+            checkIntersections(event, rect) {
+                this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+                this.raycaster.setFromCamera(this.mouse, this.camera);
+                const intersects = this.raycaster.intersectObjects(this.markerObjects, true);
+                return intersects;
+            }
+        }
+
+        // ============================================
+        // CLASSE PRINCIPALE
+        // ============================================
+        class GlobePortfolio {
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.globe = null;
+                this.markers = [];
+                this.markerObjects = [];
+                this.animationController = new AnimationController();
+                this.inputHandler = null;
+                this.interactionManager = null;
+                this.currentDisplayedProjects = [];
+                this.init();
+            }
+
+            async init() {
+                try {
+                    this.setupScene();
+                    this.setupLights();
+                    createSpaceBackground(this.scene);
+                    await this.createGlobe();
+                    this.createMarkers();
+                    this.setupControls();
+                    this.setupInteraction();
+                    this.animate();
+                    this.hideLoadingSpinner();
+                } catch (error) {
+                    console.error('Erreur initialisation portfolio:', error);
+                }
+            }
+
+            setupScene() {
+                this.scene = new THREE.Scene();
+                
+                this.camera = new THREE.PerspectiveCamera(
+                    45,
+                    this.container.clientWidth / this.container.clientHeight,
+                    0.1,
+                    1000
+                );
+                this.camera.position.z = 2.5;
+
+                this.renderer = new THREE.WebGLRenderer({ 
+                    antialias: true, 
+                    alpha: true,
+                    powerPreference: 'high-performance'
+                });
+                this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                this.renderer.setClearColor(0x0a0e27, 1);
+                this.renderer.shadowMap.enabled = false;
+                this.container.appendChild(this.renderer.domElement);
+
+                window.addEventListener('resize', debounce(() => this.onWindowResize(), 200));
+            }
+
+            setupLights() {
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                this.scene.add(ambientLight);
+
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(5, 3, 5);
+                this.scene.add(directionalLight);
+            }
+
+            async createGlobe() {
+                const globeGeometry = new THREE.SphereGeometry(1, 64, 64);
+
+                const earthTexture = await TextureManager.load(
+                    'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg'
+                );
+
+                const globeMaterial = new THREE.MeshPhongMaterial({
+                    map: earthTexture,
+                    bumpScale: 0.05,
+                    specular: new THREE.Color(0x333333),
+                    shininess: 5
+                });
+
+                this.globe = new THREE.Mesh(globeGeometry, globeMaterial);
+                this.scene.add(this.globe);
+            }
+
+            createMarkers() {
+                PROJECTS_DATA.forEach((project, index) => {
+                    const categoryColor = CATEGORY_COLORS[project.categoryGroup];
+                    const markerPin = createMarkerPin(categoryColor);
+                    
+                    const position = latLonToVector3(project.lat, project.lon, 1.0);
+                    markerPin.position.copy(position);
+                    
+                    const normal = position.clone().normalize();
+                    const up = new THREE.Vector3(0, 1, 0);
+                    const right = new THREE.Vector3().crossVectors(up, normal).normalize();
+                    const correctedUp = new THREE.Vector3().crossVectors(normal, right).normalize();
+                    
+                    const matrix = new THREE.Matrix4();
+                    matrix.makeBasis(right, correctedUp, normal);
+                    markerPin.quaternion.setFromRotationMatrix(matrix);
+                    
+                    markerPin.userData = { project, index };
+                    markerPin.name = `marker-${index}`;
+
+                    this.scene.add(markerPin);
+                    this.markers.push({ group: markerPin, originalPosition: position, project });
+                    this.markerObjects.push(markerPin);
+                });
+            }
+
+            setupControls() {
+                this.inputHandler = new InputHandler(this.container, {
+                    onDown: () => {
+                        this.animationController.autoRotate = false;
+                    },
+                    onMove: ({ deltaX, deltaY }) => {
+                        this.animationController.setDelta(deltaX, deltaY);
+                    },
+                    onUp: () => {
+                        setTimeout(() => {
+                            this.animationController.autoRotate = true;
+                        }, 2000);
+                    }
+                });
+            }
+
+            setupInteraction() {
+                this.interactionManager = new InteractionManager(this.camera, this.markerObjects);
+            }
+
+            animate = () => {
+                requestAnimationFrame(this.animate);
+
+                const rotation = this.animationController.update(this.inputHandler.isDragging);
+
+                this.globe.rotation.y = rotation.y;
+                this.globe.rotation.x = rotation.x;
+
+                this.markers.forEach(({ group, originalPosition, project }) => {
+                    const newPos = originalPosition.clone();
+                    newPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), rotation.y);
+                    newPos.applyAxisAngle(new THREE.Vector3(1, 0, 0), rotation.x);
+                    group.position.copy(newPos);
+                    
+                    const normal = newPos.clone().normalize();
+                    const up = new THREE.Vector3(0, 1, 0);
+                    const right = new THREE.Vector3().crossVectors(up, normal).normalize();
+                    const correctedUp = new THREE.Vector3().crossVectors(normal, right).normalize();
+                    
+                    const matrix = new THREE.Matrix4();
+                    matrix.makeBasis(right, correctedUp, normal);
+                    group.quaternion.setFromRotationMatrix(matrix);
+                    
+                    const sphere = group.children[1];
+                    if (sphere) {
+                        const scale = 1 + Math.sin(Date.now() * 0.003 + group.userData.index) * 0.15;
+                        sphere.scale.set(scale, scale, scale);
+                    }
+                });
+
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            onWindowResize() {
+                const width = this.container.clientWidth;
+                const height = this.container.clientHeight;
+
+                this.camera.aspect = width / height;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(width, height);
+            }
+
+            closePanel() {
+                document.getElementById('projectPanel').classList.remove('active');
+            }
+
+            hideLoadingSpinner() {
+                const spinner = this.container.querySelector('.loading-spinner');
+                if (spinner) {
+                    spinner.style.opacity = '0';
+                    setTimeout(() => spinner.remove(), 300);
+                }
+            }
+        }
+
+        // ============================================
+        // GESTION DU PANNEAU
+        // ============================================
+        function showProjectsAtLocation(projects) {
+            const panel = document.getElementById('projectPanel');
+            const content = document.getElementById('panelContent');
+            window.portfolio.currentDisplayedProjects = projects;
+
+            if (projects.length > 1) {
+                let selectorHTML = `
+                    <div class="project-selector">
+                        <h3>Projets à cet endroit (${projects.length})</h3>
+                        <div class="project-options">
+                `;
+
+                projects.forEach((project, index) => {
+                    const categoryColor = CATEGORY_COLORS[project.categoryGroup];
+                    const colorHex = hexToString(categoryColor);
+                    selectorHTML += `
+                        <div class="project-option ${index === 0 ? 'active' : ''}" 
+                             onclick="window.showProjectDetail(window.portfolio.currentDisplayedProjects[${index}])">
+                            <span style="color: ${colorHex}">●</span> ${project.name}
+                        </div>
+                    `;
+                });
+
+                selectorHTML += `
+                        </div>
+                    </div>
+                `;
+                content.innerHTML = selectorHTML;
+            }
+
+            showProjectDetail(projects[0]);
+            panel.classList.add('active');
+        }
+
+        function showProjectDetail(project) {
+            const content = document.getElementById('panelContent');
+            const categoryColor = CATEGORY_COLORS[project.categoryGroup];
+            const colorHex = hexToString(categoryColor);
+
+            const selectorDiv = content.querySelector('.project-selector');
+
+            let linksHTML = '';
+            if (project.pdfUrl || project.projectUrl) {
+                linksHTML = '<div class="project-links">';
+                
+                if (project.pdfUrl) {
+                    linksHTML += `
+                        <a href="${project.pdfUrl}" target="_blank" class="project-link-btn pdf-btn">
+                            <span class="icon">📄</span>
+                            Télécharger PDF
+                        </a>
+                    `;
+                }
+                
+                if (project.projectUrl) {
+                    linksHTML += `
+                        <a href="${project.projectUrl}" target="_blank" class="project-link-btn link-btn">
+                            <span class="icon">🔗</span>
+                            Voir le projet
+                        </a>
+                    `;
+                }
+                
+                linksHTML += '</div>';
+            }
+
+            const detailHTML = `
+                <h2 id="panelTitle">${project.name}</h2>
+                <div class="project-meta">
+                    <span><span class="color-dot" style="background: ${colorHex}"></span>${project.category}</span>
+                    <span>📅 ${project.date}</span>
+                    <span>📍 ${project.location}</span>
+                </div>
+                ${linksHTML}
+                <div class="project-section">
+                    <h3>Description</h3>
+                    <p>${project.description}</p>
+                </div>
+                <div class="project-section">
+                    <h3>Objectifs</h3>
+                    <p>${project.objectives}</p>
+                </div>
+                <div class="project-section">
+                    <h3>Outils utilisés</h3>
+                    <p>${project.tools}</p>
+                </div>
+                <div class="project-section">
+                    <h3>Résultats</h3>
+                    <p>${project.results}</p>
+                </div>
+            `;
+
+            if (selectorDiv) {
+                content.innerHTML = selectorDiv.outerHTML + detailHTML;
+                
+                const options = content.querySelectorAll('.project-option');
+                options.forEach((opt, idx) => {
+                    opt.classList.toggle('active', window.portfolio.currentDisplayedProjects[idx].name === project.name);
+                });
+            } else {
+                content.innerHTML = detailHTML;
+            }
+
+            const closeBtn = content.parentElement.querySelector('.close-btn');
+            closeBtn?.focus();
+        }
+
+        // ============================================
+        // GÉNÉRATION GRILLE PAR CATÉGORIE
+        // ============================================
+        function generateProjectsGrid() {
+            const container = document.getElementById('projectsContainer');
+            
+            const groupedProjects = {};
+            PROJECTS_DATA.forEach(project => {
+                if (!groupedProjects[project.categoryGroup]) {
+                    groupedProjects[project.categoryGroup] = [];
+                }
+                groupedProjects[project.categoryGroup].push(project);
+            });
+
+            const categoryOrder = ["Opérationnel", "Recherche"];
+
+            categoryOrder.forEach(groupName => {
+                if (groupedProjects[groupName]) {
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'category-group';
+
+                    const titleDiv = document.createElement('div');
+                    titleDiv.className = 'category-title';
+                    
+                    const categoryColor = CATEGORY_COLORS[groupName];
+                    const colorHex = hexToString(categoryColor);
+                    
+                    titleDiv.innerHTML = `
+                        <span class="category-icon" style="background: ${colorHex}"></span>
+                        ${groupName}
+                    `;
+                    groupDiv.appendChild(titleDiv);
+
+                    const grid = document.createElement('div');
+                    grid.className = 'projects-grid';
+
+                    groupedProjects[groupName].forEach(project => {
+                        const categoryColor = CATEGORY_COLORS[project.categoryGroup];
+                        const colorHex = hexToString(categoryColor);
+
+                        const card = document.createElement('div');
+                        card.className = 'project-card';
+                        card.setAttribute('role', 'button');
+                        card.setAttribute('tabindex', '0');
+                        card.setAttribute('aria-label', `Projet: ${project.name}`);
+                        
+                        card.innerHTML = `
+                            <h3>
+                                <span class="project-card-color" style="background: ${colorHex}"></span>
+                                ${project.category}
+                            </h3>
+                            <div class="meta">${project.date} • ${project.location}</div>
+                            <p><strong>${project.name}</strong></p>
+                            <p style="margin-top: 10px; font-size: 13px;">${project.description}</p>
+                        `;
+
+                        const openProject = () => {
+                            showProjectsAtLocation([project]);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        };
+
+                        card.addEventListener('click', openProject);
+                        card.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                openProject();
+                            }
+                        });
+
+                        grid.appendChild(card);
+                    });
+
+                    groupDiv.appendChild(grid);
+                    container.appendChild(groupDiv);
+                }
+            });
+        }
+        
+        // ============================================
+        // FONCTION DE ZOOM SUR MARQUEUR
+        // ============================================
+        ///function flyToLocation(portfolio, lat, lon) {
+
+            ///const radius = 2.5; // distance caméra (à ajuster)
+
+            ///const phi = (90 - lat) * (Math.PI / 180);
+            ///const theta = (lon + 180) * (Math.PI / 180);
+
+            ///const x = -radius * Math.sin(phi) * Math.cos(theta);
+            ///const y = radius * Math.cos(phi);
+            ///const z = radius * Math.sin(phi) * Math.sin(theta);
+
+            ///const targetPosition = { x: x, y: y, z: z };
+
+            // Animation fluide
+            ///gsap.to(portfolio.camera.position, {
+                ///x: targetPosition.x,
+                ///y: targetPosition.y,
+                ///z: targetPosition.z,
+                ///duration: 1.8,
+                ///ease: "power2.inOut",
+                ///onUpdate: () => {
+                ///    portfolio.camera.lookAt(0, 0, 0);
+                ///}
+            ///});
+        ///}
+
+        // ============================================
+        // GESTION CLICK MARQUEURS
+        // ============================================
+        function setupMarkerClickHandler(portfolio) {
+            portfolio.container.addEventListener('click', (event) => {
+                if (portfolio.inputHandler.isDragging) return;
+
+                const rect = portfolio.container.getBoundingClientRect();
+                const intersects = portfolio.interactionManager.checkIntersections(event, rect);
+
+                if (intersects.length > 0) {
+                    let clickedObject = intersects[0].object;
+                    
+                    while (clickedObject.parent && !clickedObject.userData.project) {
+                        clickedObject = clickedObject.parent;
+                    }
+                    
+                    if (clickedObject.userData.project) {
+                        const clickedProject = clickedObject.userData.project;
+                        ///flyToLocation(portfolio, clickedProject.lat, clickedProject.lon);
+                        const projectsAtLocation = PROJECTS_DATA.filter(p => 
+                            p.lat === clickedProject.lat && p.lon === clickedProject.lon
+                        );
+                        showProjectsAtLocation(projectsAtLocation);
+                    }
+                }
+            });
+        }
+
+        // ============================================
+        // INITIALISATION
+        // ============================================
+        window.addEventListener('DOMContentLoaded', async () => {
+            window.portfolio = new GlobePortfolio('globe-container');
+            generateProjectsGrid();
+            setupMarkerClickHandler(window.portfolio);
+            window.closePanel = () => window.portfolio.closePanel();
+            window.showProjectDetail = showProjectDetail;
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && window.portfolio) {
+                window.portfolio.closePanel();
+            }
+        });
+    </script>
+</body>
+</html>
