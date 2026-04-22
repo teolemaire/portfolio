@@ -725,6 +725,53 @@
             background: #555;
         }
         
+        /* ===== ZOOM CONTROLS ===== */
+        .zoom-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 900;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(10, 14, 39, 0.75);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(74, 158, 255, 0.35);
+            border-radius: 40px;
+            padding: 8px 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        .zoom-btn {
+            background: rgba(74, 158, 255, 0.2);
+            border: 1px solid rgba(74, 158, 255, 0.5);
+            color: #4a9eff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .zoom-btn:hover {
+            background: rgba(74, 158, 255, 0.45);
+            border-color: #4a9eff;
+            transform: scale(1.1);
+        }
+        .zoom-hint {
+            color: rgba(74, 158, 255, 0.7);
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            user-select: none;
+        }
+
         .loading-spinner {
             position: absolute;
             top: 50%;
@@ -738,6 +785,7 @@
             animation: spin 1s linear infinite;
             z-index: 500;
         }
+        
         
         @keyframes spin {
             to { transform: translate(-50%, -50%) rotate(360deg); }
@@ -807,7 +855,7 @@
                 <div class="cv-icon">🗺️</div>
                 <h3>Mon CV</h3>
                 <p>Découvrez mon parcours en géomatique</p>
-                <a href="pdf/TEOLM_CV2026.pdf" download class="cv-download-btn">📥 Télécharger</a>
+                <a href="pdf/TeoLM_CV2026.pdf" download class="cv-download-btn">📥 Télécharger</a>
             </div>
         </div>
     </div>
@@ -817,6 +865,14 @@
          aria-label="Globe interactif avec projets géomatiques"
          aria-describedby="globe-description">
         <div class="loading-spinner"></div>
+
+        <!--BOUTON ZOOM-->
+        <div class="zoom-controls">
+        <button class="zoom-btn" id="zoomIn" title="Zoomer">+</button>
+        <span class="zoom-hint">🖱 molette pour zoomer</span>
+        <button class="zoom-btn" id="zoomOut" title="Dézoomer">−</button>
+        </div>
+    
     </div>
     
     <p id="globe-description" style="display: none;">
@@ -882,7 +938,7 @@
             <div class="cv-download-section">
                 <h3>📄 Télécharger Mon CV Complet</h3>
                 <p>Consultez mon parcours détaillé, mes expériences et compétences en géomatique</p>
-                <a href="pdf/TEOLM_CV2026.pdf" download class="cv-download-btn-large">
+                <a href="pdf/TeoLM_CV2026.pdf" download class="cv-download-btn-large">
                     📥 Télécharger le CV (PDF)
                 </a>
             </div>
@@ -1286,6 +1342,11 @@
                 this.inputHandler = null;
                 this.interactionManager = null;
                 this.currentDisplayedProjects = [];
+                this.targetZoom  = 3;
+                this.currentZoom = 3;
+                this.minZoom     = 1.4;
+                this.maxZoom     = 5.0;
+                this.zoomEasing  = 0.08;
                 this.init();
             }
 
@@ -1300,6 +1361,7 @@
                     this.setupInteraction();
                     this.animate();
                     this.hideLoadingSpinner();
+                    this.setupZoom();
                 } catch (error) {
                     console.error('Erreur initialisation portfolio:', error);
                 }
@@ -1314,7 +1376,7 @@
                     0.1,
                     1000
                 );
-                this.camera.position.z = 2.5;
+                this.camera.position.z = 3;
 
                 this.renderer = new THREE.WebGLRenderer({ 
                     antialias: true, 
@@ -1399,12 +1461,58 @@
                 });
             }
 
+            setupZoom() {
+                // Molette souris
+                this.container.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const delta = e.deltaY > 0 ? 0.18 : -0.18;
+                    this.targetZoom = Math.min(this.maxZoom, Math.max(this.minZoom, this.targetZoom + delta));
+                }, { passive: false });
+
+                // Boutons +/-
+                document.getElementById('zoomIn')?.addEventListener('click', () => {
+                    this.targetZoom = Math.max(this.minZoom, this.targetZoom - 0.3);
+                });
+                document.getElementById('zoomOut')?.addEventListener('click', () => {
+                    this.targetZoom = Math.min(this.maxZoom, this.targetZoom + 0.3);
+                });
+
+                // Pinch mobile (deux doigts)
+                let lastPinchDist = null;
+                this.container.addEventListener('touchstart', (e) => {
+                    if (e.touches.length === 2) {
+                        lastPinchDist = Math.hypot(
+                            e.touches[0].clientX - e.touches[1].clientX,
+                            e.touches[0].clientY - e.touches[1].clientY
+                        );
+                    }
+                }, { passive: true });
+                this.container.addEventListener('touchmove', (e) => {
+                    if (e.touches.length === 2 && lastPinchDist !== null) {
+                        const dist = Math.hypot(
+                            e.touches[0].clientX - e.touches[1].clientX,
+                            e.touches[0].clientY - e.touches[1].clientY
+                        );
+                        const delta = (lastPinchDist - dist) * 0.01;
+                        this.targetZoom = Math.min(this.maxZoom, Math.max(this.minZoom, this.targetZoom + delta));
+                        lastPinchDist = dist;
+                    }
+                }, { passive: true });
+                this.container.addEventListener('touchend', () => {
+                    lastPinchDist = null;
+                }, { passive: true });
+            }
+
             setupInteraction() {
                 this.interactionManager = new InteractionManager(this.camera, this.markerObjects);
             }
 
             animate = () => {
                 requestAnimationFrame(this.animate);
+
+                // Zoom fluide avec easing
+                this.currentZoom += (this.targetZoom - this.currentZoom) * this.zoomEasing;
+                this.camera.position.z = this.currentZoom;
 
                 const rotation = this.animationController.update(this.inputHandler.isDragging);
 
@@ -1646,35 +1754,6 @@
             });
         }
         
-        // ============================================
-        // FONCTION DE ZOOM SUR MARQUEUR
-        // ============================================
-        ///function flyToLocation(portfolio, lat, lon) {
-
-            ///const radius = 2.5; // distance caméra (à ajuster)
-
-            ///const phi = (90 - lat) * (Math.PI / 180);
-            ///const theta = (lon + 180) * (Math.PI / 180);
-
-            ///const x = -radius * Math.sin(phi) * Math.cos(theta);
-            ///const y = radius * Math.cos(phi);
-            ///const z = radius * Math.sin(phi) * Math.sin(theta);
-
-            ///const targetPosition = { x: x, y: y, z: z };
-
-            // Animation fluide
-            ///gsap.to(portfolio.camera.position, {
-                ///x: targetPosition.x,
-                ///y: targetPosition.y,
-                ///z: targetPosition.z,
-                ///duration: 1.8,
-                ///ease: "power2.inOut",
-                ///onUpdate: () => {
-                ///    portfolio.camera.lookAt(0, 0, 0);
-                ///}
-            ///});
-        ///}
-
         // ============================================
         // GESTION CLICK MARQUEURS
         // ============================================
